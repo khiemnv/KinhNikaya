@@ -145,5 +145,16 @@ namespace WindowsFormsApp1
             xwriter.WriteEndElement();
             xwriter.Close();
         }
+
+        public static string findTmpl(string tmpl)
+        {
+            var path = Environment.CurrentDirectory;
+            while (path != null)
+            {
+                path = Path.GetDirectoryName(path);
+                if (File.Exists(path + "\\" + tmpl)) { break; }
+            }
+            return (path + "\\" + tmpl);
+        }
     }
 }

@@ -308,7 +308,7 @@ namespace WindowsFormsApp1
         }
         private string genHtmlTxt(string jsTxt)
         {
-            var path = @"D:\tmp\github\utilities\KinhPhat\WindowsFormsApp1\search.html";
+            var path = ConfigMng.findTmpl("search.html");
             var txt = File.ReadAllText(path);
             var htmlTxt = txt.Replace("var jsTxt = null", "var jsTxt = " + jsTxt);
             return htmlTxt;

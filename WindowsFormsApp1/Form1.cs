@@ -1,5 +1,5 @@
-﻿//#define use_gecko
-#define use_chromium
+﻿#define use_gecko
+//#define use_chromium
 
 using System;
 using System.Collections.Generic;
@@ -46,6 +46,14 @@ namespace WindowsFormsApp1
         public Form1()
         {
             InitializeComponent();
+
+#if use_gecko
+            var fxLib = IntPtr.Size == 8 ? "Firefox64" : "Firefox86";
+            Gecko.Xpcom.Initialize(fxLib);
+#elif use_chromium
+            var settings = new CefSharp.WinForms.CefSettings();
+            CefSharp.Cef.Initialize(settings);
+#endif
 
             var menu = new MainMenu();
             var file = menu.MenuItems.Add("&File");
@@ -176,12 +184,12 @@ namespace WindowsFormsApp1
 
         private void Bs_CurrentChanged(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         private void Bs_CurrentItemChanged(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         private void OnLoadForm(object sender, EventArgs e)
@@ -313,7 +321,7 @@ namespace WindowsFormsApp1
             UpdateWB(htmlTxt);
         }
 
-        #region db
+#region db
 
         static XmlObjectSerializer createSerializer(Type type)
         {
@@ -341,8 +349,8 @@ namespace WindowsFormsApp1
 
             return titleLst;
         }
-        #endregion
-        #region event_process
+#endregion
+#region event_process
         private void OnTreeNodeClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             //throw new NotImplementedException();
@@ -507,14 +515,8 @@ namespace WindowsFormsApp1
 
         string genHtmlTxt(string jsTxt)
         {
-            var path = Environment.CurrentDirectory;
-            string zTmpl = "templ.html";
-            while (path != null)
-            {
-                path = Path.GetDirectoryName(path);
-                if (File.Exists(path + "\\" + zTmpl)) { break; }
-            }
-            var txt = File.ReadAllText(path + "\\" + zTmpl);
+            string path = ConfigMng.findTmpl("templ.html");
+            var txt = File.ReadAllText(path);
             var htmlTxt = txt.Replace("var jsTxt = null", "var jsTxt = " + jsTxt);
             return htmlTxt;
         }
@@ -548,9 +550,9 @@ namespace WindowsFormsApp1
 #endif
             //OpenInBrowser(htmlTxt);
         }
-        #endregion
+#endregion
 
-        #region tree
+#region tree
         void addTitles(List<MyTitle> titles)
         {
             foreach (var title in titles)
@@ -946,7 +948,7 @@ namespace WindowsFormsApp1
                 if (i.Nodes.Count > 0) { UpdateChilds(i, idx); }
             }
         }
-        #endregion
+#endregion
     }
 
     [DataContract(Name = "MyTitle")]

@@ -800,7 +800,7 @@ namespace WindowsFormsApp1
             var titleLst = new List<MyTitle>();
             var qry2 = "select * from titles WHERE pathId = @pathId order by ord ASC";
             var cmd2 = new OleDbCommand(qry2, cnn);
-            cmd2.Parameters.Add("@pathId", OleDbType.BigInt);
+            cmd2.Parameters.Add("@pathId", OleDbType.Integer);
             foreach (var pi in pathLst)
             {
                 cmd2.Parameters[0].Value = pi.id;
