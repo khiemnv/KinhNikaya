@@ -406,6 +406,7 @@ namespace WindowsFormsApp1
         bool OpenDbDlg()
         {
             OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Title = "Select database file";
             ofd.Filter = "access files (*.accdb)|*.accdb";
             //ofd.Multiselect = true;
             var ret = ofd.ShowDialog();

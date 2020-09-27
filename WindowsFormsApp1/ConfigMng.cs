@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.OleDb;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -119,6 +120,20 @@ namespace WindowsFormsApp1
                     {
                         m_instance.m_cnnInfo = new CnnInfo();
                     }
+
+                    //check cnnstr
+                    try
+                    {
+                        string cnnStr = m_instance.m_cnnInfo.cnnStr;
+                        var cnn = new OleDbConnection(cnnStr);
+                        cnn.Open();
+                        cnn.Close();
+                    }
+                    catch
+                    {
+                        m_instance.m_cnnInfo.cnnStr = null;
+                    }
+
                 }
                 else
                 {
