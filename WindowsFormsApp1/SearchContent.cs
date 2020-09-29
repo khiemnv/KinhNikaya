@@ -57,6 +57,7 @@ namespace WindowsFormsApp1
             //cmd.CommandText = "SELECT * FROM paragraphs WHERE ID > 42207";  //tieu bo last build search data
             //cmd.CommandText = "SELECT * FROM paragraphs WHERE ID > 4749";  //truong bo last build search data
             //cmd.CommandText = "SELECT * FROM paragraphs WHERE ID > 7723";  //trung bo last build search data
+            //cmd.CommandText = "SELECT * FROM paragraphs WHERE ID > 16236";  //tuong ung bo last build search data
             cmd.CommandText = "";
             var rd = cmd.ExecuteReader();
             var reg = new Regex(@"[\w]+(-\w+)*");
@@ -167,7 +168,7 @@ namespace WindowsFormsApp1
         void crtSrchDb(string path)
         {
             SQLiteConnection.CreateFile(path);
-            SQLiteConnection cnn = new SQLiteConnection("Data Source=MyDatabase.sqlite;Version=3;");
+            SQLiteConnection cnn = new SQLiteConnection("Data Source="+ path + ";Version=3;");
             cnn.Open();
 
             string[] sqls = new string[] {
