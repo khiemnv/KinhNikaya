@@ -1,9 +1,10 @@
-﻿#define use_browser
+﻿//#define use_browser
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Text.RegularExpressions;
@@ -93,9 +94,11 @@ namespace WindowsFormsApp1
             m_lstV = lst;
 #endif
 
-            var sts = new StatusBar();
-            sts.Dock = DockStyle.Bottom;
-            sts.ShowPanels = false;
+            var sts = new StatusBar
+            {
+                Dock = DockStyle.Bottom,
+                ShowPanels = false
+            };
             m_sts = sts;
 
             int iRow = 0;

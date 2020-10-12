@@ -1,5 +1,6 @@
 ﻿//#define use_gecko
-#define use_chromium
+//#define use_chromium
+#define use_rtb
 
 using System;
 using System.Collections.Generic;
@@ -17,6 +18,8 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Text.RegularExpressions;
 using System.Speech.Synthesis;
+using System.Runtime.CompilerServices;
+//using Gecko.WebIDL;
 
 namespace WindowsFormsApp1
 {
@@ -27,13 +30,14 @@ namespace WindowsFormsApp1
         BackgroundWorker m_bw;
         SplitContainer m_sc;
         SplitContainer m_rsc;
-        RichTextBox m_rtb;
         List<MyTitle> m_titles;
 
         string m_curTitle = "";     //xxx/yyy
         bool isEditing = false;
 
-#if use_gecko
+#if use_rtb
+        RichTextBox m_rtb;
+#elif use_gecko
         protected Gecko.GeckoWebBrowser m_wb;
 #elif use_chromium
         protected CefSharp.WinForms.ChromiumWebBrowser m_wb;
@@ -74,9 +78,15 @@ namespace WindowsFormsApp1
             m_tree.Visible = true;
             m_tree.Nodes.Add(new TreeNode() { Text = "None", SelectedImageIndex = 0 });
 
-            //m_rtb = new RichTextBox();
-            //m_rtb.Dock = DockStyle.Fill;
-            //m_sc.Panel2.Controls.Add(m_rtb);
+            m_rsc = new SplitContainer()
+            {
+                Dock = DockStyle.Fill,
+            };
+#if use_rtb
+            m_rtb = new RichTextBox();
+            m_rtb.Dock = DockStyle.Fill;
+            m_rsc.Panel1.Controls.Add(m_rtb);
+#else
 #if use_gecko
             var wb = new Gecko.GeckoWebBrowser();
             wb.LoadHtml("<html><body></body></html>", "http://blank");
@@ -87,12 +97,8 @@ namespace WindowsFormsApp1
 #endif
             wb.Dock = DockStyle.Fill;
             m_wb = wb;
-            m_rsc = new SplitContainer()
-            {
-                Dock = DockStyle.Fill,
-            };
             m_rsc.Panel1.Controls.Add(m_wb);
-
+#endif
             var edtPanel = new EditPanel();
             m_edtPanel = edtPanel;
 
@@ -308,9 +314,8 @@ namespace WindowsFormsApp1
 
             var title = m_nodeDict[key].title;
             title.paragraphLst = m_content.getTitleParagraphs(m_edtPanel.m_dataTable);
-            string jsTxt = titlesLstToJson(title);
-            string htmlTxt = genHtmlTxt(jsTxt);
-            UpdateWB(htmlTxt);
+
+            RenderFullTitle(title);
         }
 
 #region db
@@ -432,8 +437,8 @@ namespace WindowsFormsApp1
                 //reset current title
                 m_curTitle = "";
 
-                string jsTxt = titlesLstToJson(selected);
-                string htmlTxt = genHtmlTxt(jsTxt);
+                string jsTxt = TitlesLstToJson(selected);
+                string htmlTxt = GenHtmlTxt(jsTxt);
                 UpdateWB(htmlTxt);
             }
         }
@@ -492,21 +497,61 @@ namespace WindowsFormsApp1
         }
         void exportTitles(string path, List<MyTitle> selected)
         {
-            string jsTxt = titlesLstToJson(selected);
-            string htmlTxt = genHtmlTxt(jsTxt);
+            string jsTxt = TitlesLstToJson(selected);
+            string htmlTxt = GenHtmlTxt(jsTxt);
             File.WriteAllText(path, htmlTxt);
+        }
+
+        private void RenderFullTitle(MyTitle title)
+        {
+#if use_rtb
+            m_rtb.Clear();
+            m_rtb.Multiline = true;
+            foreach (MyParagraph par in title.paragraphLst)
+            {
+                Font font;
+                font = new Font("Arial", par.fontSize, style: FontStyle.Regular);
+
+                if (par.fontBold != 0)
+                {
+                    font = new Font(font, FontStyle.Bold);
+                }
+                if (par.fontItalic != 0)
+                {
+                    font = new Font(font, FontStyle.Italic);
+                }
+                switch (par.alignment)
+                {
+                    case 0:
+                        m_rtb.SelectionAlignment = HorizontalAlignment.Left;
+                        break;
+                    case 1:
+                        m_rtb.SelectionAlignment = HorizontalAlignment.Center;
+                        break;
+                    case 2:
+                        m_rtb.SelectionAlignment = HorizontalAlignment.Right;
+                        break;
+                }
+                m_rtb.SelectionIndent = par.leftIndent + 5;
+                m_rtb.SelectionFont = font;
+                m_rtb.SelectedText = par.content;
+                m_rtb.SelectedText = Environment.NewLine;
+            }
+#else
+            string jsTxt = titlesLstToJson(title);
+            string htmlTxt = genHtmlTxt(jsTxt);
+            UpdateWB(htmlTxt);
+#endif
         }
 
         private void DisplayTitle(MyTitle title)
         {
             Debug.Assert(title.zPath != m_curTitle);
             title.paragraphLst = m_content.getTitleParagraphs(title.ID);
-            string jsTxt = titlesLstToJson(title);
-            string htmlTxt = genHtmlTxt(jsTxt);
-            UpdateWB(htmlTxt);
+            RenderFullTitle(title);
         }
 
-        string genHtmlTxt(string jsTxt)
+        string GenHtmlTxt(string jsTxt)
         {
             string path = ConfigMng.findTmpl("templ.html");
             var txt = File.ReadAllText(path);
@@ -514,12 +559,12 @@ namespace WindowsFormsApp1
             return htmlTxt;
         }
 
-        string titlesLstToJson(MyTitle title)
+        string TitlesLstToJson(MyTitle title)
         {
             List<MyTitle> titleLst = new List<MyTitle>() { title };
-            return titlesLstToJson(titleLst);
+            return TitlesLstToJson(titleLst);
         }
-        string titlesLstToJson(List<MyTitle> titleLst)
+        string TitlesLstToJson(List<MyTitle> titleLst)
         {
             var x = createSerializer(titleLst.GetType());
             var mem = new MemoryStream();
@@ -533,8 +578,10 @@ namespace WindowsFormsApp1
         protected void UpdateWB(string htmlTxt)
         {
             string filename = string.Format(@"{0}{1}", Path.GetTempPath(), "page.htm");
-            File.WriteAllText(filename, htmlTxt);
-#if use_gecko
+            System.IO.File.WriteAllText(filename, htmlTxt);
+#if use_rtb
+            Debug.Assert(false);
+#elif use_gecko
             m_wb.Navigate(filename);
 #elif use_chromium
             m_wb.Load(filename);

@@ -1,5 +1,6 @@
 ﻿//#define use_gecko
-#define use_chromium
+//#define use_chromium
+#define use_rtb
 
 using System;
 using System.Collections.Generic;
@@ -17,7 +18,8 @@ namespace WindowsFormsApp1
         [STAThread]
         static void Main()
         {
-#if use_gecko
+#if use_rtb
+#elif use_gecko
             var fxLib = IntPtr.Size == 8 ? "Firefox64" : "Firefox86";
             Gecko.Xpcom.Initialize(fxLib);
 #elif use_chromium
