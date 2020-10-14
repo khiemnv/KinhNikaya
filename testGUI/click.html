@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Page Title</title>
+</head>
+<body>
+
+<h1>This is a Heading</h1>
+<p>This is a paragraph.</p>
+<button id ="id_gotoTopBtn" onclick="myfunction(123)">click</button>
+<script>
+function myfunction(id) {
+	var fname = "func1";
+	var parameter = id.toString();
+    event = new MessageEvent(fname, { 'view': window, 'bubbles': false, 'cancelable': false, 'data': parameter });
+    document.dispatchEvent(event);
+        }
+</script>
+</body>
+</html>
