@@ -1,4 +1,6 @@
-﻿//#define use_browser
+﻿//#define use_chromium
+//#define use_gecko
+//#define use_lstview
 
 using System;
 using System.Collections.Generic;
@@ -17,7 +19,7 @@ namespace WindowsFormsApp1
     {
         string cnnStr;
         public TableLayoutPanel m_tblLayout;
-#if use_browser
+#if use_chromium
         class JsHandler
         {
             public EventHandler<string> OnTitleSelected;
@@ -28,6 +30,8 @@ namespace WindowsFormsApp1
             }
         }
         protected CefSharp.WinForms.ChromiumWebBrowser m_wb;
+#elif use_gecko
+        protected Gecko.GeckoWebBrowser m_wb;
 #else
         ListView m_lstV;
 #endif
@@ -63,7 +67,7 @@ namespace WindowsFormsApp1
             }
             m_acceptBtn = btn;
 
-#if use_browser
+#if use_chromium
             var lst = new CefSharp.WinForms.ChromiumWebBrowser("");
             lst.Dock = DockStyle.Fill;
             JsHandler jsHandler = new JsHandler();
@@ -73,6 +77,10 @@ namespace WindowsFormsApp1
                 OnSelectTitle?.Invoke(s, Convert.ToUInt64(e));
             };
             lst.JavascriptObjectRepository.Register("jsHandler", jsHandler, true);
+            m_wb = lst;
+#elif use_gecko
+            var lst = new Gecko.GeckoWebBrowser();
+            lst.Dock = DockStyle.Fill;
             m_wb = lst;
 #else
             var lst = new ListView();
@@ -111,6 +119,7 @@ namespace WindowsFormsApp1
             m_tblLayout.Controls.Add(btn, 0, iRow++);
             m_tblLayout.Controls.Add(lst, 0, iRow++);
             m_tblLayout.Controls.Add(sts, 0, iRow++);
+
         }
 
         public event EventHandler<UInt64> OnSelectTitle;
@@ -134,7 +143,7 @@ namespace WindowsFormsApp1
             var begin = Environment.TickCount;
             var srch = new SearchContent(cnnStr);
             var res = srch.Find(txt);
-            showSearchRes(res);
+            ShowSearchRes(res);
             m_sts.Text = string.Format("elapsed time: {0}(ms)", Environment.TickCount - begin);
             srch.Close();
         }
@@ -311,21 +320,29 @@ namespace WindowsFormsApp1
         }
         private string genHtmlTxt(string jsTxt)
         {
+
+#if use_chromium
             var path = ConfigMng.findTmpl("search.html");
+#elif use_gecko
+            var path = ConfigMng.findTmpl("search_gecko.html");
+#endif
             var txt = File.ReadAllText(path);
             var htmlTxt = txt.Replace("var jsTxt = null", "var jsTxt = " + jsTxt);
             return htmlTxt;
         }
-        void showSearchRes(SrchResult res)
+        void ShowSearchRes(SrchResult res)
         {
-#if use_browser
-            //create json data [title, texthtml]
             var data = convJsData(res);
             var jsTxt = genJsTxt(data);
             string htmlTxt = genHtmlTxt(jsTxt);
             string filename = string.Format(@"{0}{1}", Path.GetTempPath(), "page.htm");
             File.WriteAllText(filename, htmlTxt);
+#if use_chromium
+            //create json data [title, texthtml]
             m_wb.Load(filename);
+#elif use_gecko
+            m_wb.Navigate(filename);
+            m_wb.AddMessageEventListener("openTitle", OnOpenTitle);
 #else
             var listView1 = m_lstV;
             listView1.Clear();
@@ -356,6 +373,9 @@ namespace WindowsFormsApp1
             }
 #endif
         }
-
+        private void OnOpenTitle(string s)
+        {
+            OnSelectTitle?.Invoke(m_wb, Convert.ToUInt64(s));
+        }
     }
 }

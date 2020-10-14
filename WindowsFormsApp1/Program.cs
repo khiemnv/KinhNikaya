@@ -1,6 +1,6 @@
 ﻿//#define use_gecko
 //#define use_chromium
-#define use_rtb
+//#define use_rtb
 
 using System;
 using System.Collections.Generic;

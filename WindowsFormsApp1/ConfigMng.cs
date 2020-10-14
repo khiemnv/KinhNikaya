@@ -72,6 +72,10 @@ namespace WindowsFormsApp1
         [DataMember(Name = "srchWndPos")]
         public Point m_srchWndPos;
 
+        [DataMember(Name = "fontFamily")]
+        public string m_fontFamily;
+        [DataMember(Name = "fontSize")]
+        public float m_fontSize;
 
         public lContentProvider m_content;
 
@@ -82,6 +86,8 @@ namespace WindowsFormsApp1
         {
             m_cnnInfo = new CnnInfo();
             m_curSts = new CurrentState();
+            m_fontFamily = "Arial";
+            m_fontSize = 12;
         }
 
         static XmlObjectSerializer createSerializer()

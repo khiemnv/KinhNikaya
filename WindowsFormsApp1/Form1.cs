@@ -1,6 +1,6 @@
 ﻿//#define use_gecko
 //#define use_chromium
-#define use_rtb
+//#define use_rtb
 
 using System;
 using System.Collections.Generic;
@@ -51,13 +51,14 @@ namespace WindowsFormsApp1
         {
             InitializeComponent();
 
-            var menu = new MainMenu();
-            var file = menu.MenuItems.Add("&File");
-            file.MenuItems.Add("&Open").Click += (s, e) => { OnOpenDb(s, e); };
-            file.MenuItems.Add("&Preview").Click += (s, e) => { PreviewTitle(s, e); };
-            file.MenuItems.Add("&Export").Click += (s, e) => { ExportSelected(s, e); };
-            file.MenuItems.Add("&Find").Click += (s, e) => { OpenFindWnd(); };
-            this.Menu = menu;
+            var menu = new MenuStrip();
+            var file = new ToolStripMenuItem("&File");
+            menu.Items.Add(file);
+            file.DropDownItems.Add("&Open").Click += (s, e) => { OnOpenDb(s, e); };
+            file.DropDownItems.Add("&Preview").Click += (s, e) => { PreviewTitle(s, e); };
+            file.DropDownItems.Add("&Export").Click += (s, e) => { ExportSelected(s, e); };
+            file.DropDownItems.Add("&Find").Click += (s, e) => { OpenFindWnd(); };
+            this.MainMenuStrip  = menu;
 
             m_sc = new SplitContainer();
             m_sc.Dock = DockStyle.Fill;
@@ -89,7 +90,7 @@ namespace WindowsFormsApp1
 #else
 #if use_gecko
             var wb = new Gecko.GeckoWebBrowser();
-            wb.LoadHtml("<html><body></body></html>", "http://blank");
+            //wb.LoadHtml("<html><body></body></html>", "http://blank");
 #elif use_chromium
             var wb = new CefSharp.WinForms.ChromiumWebBrowser("");
 #else
@@ -117,6 +118,8 @@ namespace WindowsFormsApp1
             bs.CurrentItemChanged += Bs_CurrentItemChanged;
             bs.CurrentChanged += Bs_CurrentChanged;
 
+            this.Controls.Add(menu);
+
             this.Load += OnLoadForm;
             this.FormClosed += OnCloseForm;
         }
@@ -126,7 +129,9 @@ namespace WindowsFormsApp1
             var dlg = new Form();
             dlg.Name = "Find";
             dlg.Icon = new Icon(@"..\..\..\Search.ico");
-            var srchPanel = new SearchPanel(ConfigMng.getInstance().m_cnnInfo.cnnStr);
+            var cfg = ConfigMng.getInstance();
+            dlg.Font = new Font(cfg.m_fontFamily, cfg.m_fontSize);
+            var srchPanel = new SearchPanel(cfg.m_cnnInfo.cnnStr);
             dlg.Controls.Add(srchPanel.m_tblLayout);
             srchPanel.OnSelectTitle += (s, e) =>
             {
@@ -136,7 +141,6 @@ namespace WindowsFormsApp1
 
             dlg.AcceptButton = srchPanel.m_acceptBtn;
 
-            var cfg = ConfigMng.getInstance();
             if (cfg.m_srchWndSize.Width > 0)
             {
                 dlg.Location = cfg.m_srchWndPos;
@@ -212,16 +216,19 @@ namespace WindowsFormsApp1
                 //restore state
                 restoreSts();
 
-                if (cfg.m_wndSize.Width > 0)
-                {
-                    this.Location = cfg.m_wndPos;
-                    this.Size = cfg.m_wndSize;
-                }
-
                 //set form title
                 UpdateFormName();
             }
 
+            //set font
+            this.Font = new Font(cfg.m_fontFamily, cfg.m_fontSize);
+            this.MainMenuStrip.Font = new Font(cfg.m_fontFamily, cfg.m_fontSize);
+
+            if (cfg.m_wndSize.Width > 0)
+            {
+                this.Location = cfg.m_wndPos;
+                this.Size = cfg.m_wndSize;
+            }
         }
 
         void UpdateFormName()
@@ -538,8 +545,8 @@ namespace WindowsFormsApp1
                 m_rtb.SelectedText = Environment.NewLine;
             }
 #else
-            string jsTxt = titlesLstToJson(title);
-            string htmlTxt = genHtmlTxt(jsTxt);
+            string jsTxt = TitlesLstToJson(title);
+            string htmlTxt = GenHtmlTxt(jsTxt);
             UpdateWB(htmlTxt);
 #endif
         }
@@ -578,7 +585,7 @@ namespace WindowsFormsApp1
         protected void UpdateWB(string htmlTxt)
         {
             string filename = string.Format(@"{0}{1}", Path.GetTempPath(), "page.htm");
-            System.IO.File.WriteAllText(filename, htmlTxt);
+            File.WriteAllText(filename, htmlTxt);
 #if use_rtb
             Debug.Assert(false);
 #elif use_gecko
