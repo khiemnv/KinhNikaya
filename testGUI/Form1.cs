@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DataGridViewRichTextBox;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -30,13 +31,18 @@ namespace testGUI
 
             m_wb = new Gecko.GeckoWebBrowser();
             m_wb.Dock = DockStyle.Fill;
+            m_wb.Visible = false;
+
             //m_wb.AddMessageEventListener("func1", onFunc1);
             //wb.DomClick += Wb_DomClick;
             //wb.LoadHtml("<html><body></body></html>", "http://blank");
             this.Controls.Add(m_wb);
             this.Load += Form1_Load;
-        }
+            var rtbcol = new DataGridViewRichTextBoxColumn();
 
+            dataGridView1.Columns.Add(rtbcol);
+            //dataGridView1.Rows.Add(row);
+        }
         private void Form1_Load(object sender, EventArgs e)
         {
 #if false
@@ -91,7 +97,11 @@ namespace testGUI
             //listView2.Items.Add(lvi);
             //m_wb.AddMessageEventListener("func1", onFunc1);
             //m_wb.Navigate(@"C:\temp\until\KinhNikaya\testGUI\click.html");
-            
+            int i = dataGridView1.Rows.Add();
+            var row = dataGridView1.Rows[i];
+            row.Cells[0].Value = "one";
+            row.Cells[1].Value = "two";
+            row.Cells[2].Value = "three";
         }
 
         string cnnStr
