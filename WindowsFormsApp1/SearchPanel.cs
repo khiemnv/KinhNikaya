@@ -235,11 +235,11 @@ namespace WindowsFormsApp1
                     if (n > 0)
                     {
                         n = adjEnd(txt, cur, Math.Min(n, 50));
+                        mt.txtLst.Add(new MarkedTxt()
+                        {
+                            txt = txt.Substring(cur, n) + "\v"
+                        });
                     }
-                    mt.txtLst.Add(new MarkedTxt()
-                    {
-                        txt = txt.Substring(cur, n) + "\v"
-                    });
                 }
 
                 lst.Add(mt);

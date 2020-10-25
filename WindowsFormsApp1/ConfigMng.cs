@@ -71,11 +71,17 @@ namespace WindowsFormsApp1
         public Size m_srchWndSize;
         [DataMember(Name = "srchWndPos")]
         public Point m_srchWndPos;
+        [DataMember(Name = "srchMaxResult")]
+        public int m_srchMaxRes;
+        [DataMember(Name = "srchMaxDistance")]
+        public int m_srchMaxD;
 
         [DataMember(Name = "fontFamily")]
         public string m_fontFamily;
         [DataMember(Name = "fontSize")]
         public float m_fontSize;
+
+
 
         public lContentProvider m_content;
 
@@ -88,6 +94,8 @@ namespace WindowsFormsApp1
             m_curSts = new CurrentState();
             m_fontFamily = "Arial";
             m_fontSize = 12;
+            m_srchMaxRes = 1000;
+            m_srchMaxD = 100;
         }
 
         static XmlObjectSerializer createSerializer()
@@ -140,6 +148,9 @@ namespace WindowsFormsApp1
                         m_instance.m_cnnInfo.cnnStr = null;
                     }
 
+                    //chk srch setting
+                    if (m_instance.m_srchMaxRes == 0) { m_instance.m_srchMaxRes = 1000; }
+                    if (m_instance.m_srchMaxD == 0) { m_instance.m_srchMaxD = 100; }
                 }
                 else
                 {

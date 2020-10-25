@@ -58,6 +58,7 @@ namespace WindowsFormsApp1
             //cmd.CommandText = "SELECT * FROM paragraphs WHERE ID > 4749";  //truong bo last build search data
             //cmd.CommandText = "SELECT * FROM paragraphs WHERE ID > 7723";  //trung bo last build search data
             //cmd.CommandText = "SELECT * FROM paragraphs WHERE ID > 16236";  //tuong ung bo last build search data
+            //cmd.CommandText = "SELECT * FROM paragraphs WHERE ID > 12044";  //tang chi bo last build search data
             cmd.CommandText = "";
             var rd = cmd.ExecuteReader();
             var reg = new Regex(@"[\w]+(-\w+)*");
@@ -483,6 +484,10 @@ namespace WindowsFormsApp1
 
         SrchRec[] calcDiff(MyWord[][] arr, int nRow)
         {
+            var cfg = ConfigMng.getInstance();
+            int max_res = cfg.m_srchMaxRes;
+            int max_d = cfg.m_srchMaxD;
+
             var begin = Environment.TickCount;
             var res = new SrchRec[arr[0].Length];
             for (int i = 0; i < arr[0].Length; i++)
@@ -515,16 +520,25 @@ namespace WindowsFormsApp1
                 }
 
                 var h = new MyHeap<int[]>(tmplRes.ToArray(), (x, y) => x[2] - y[2]);
-                var n = Math.Min(100, tmplRes.Count);
-                var top100 = new SrchRec[n];
+                var n = Math.Min(max_res, tmplRes.Count);
+                var top = new SrchRec[n];
                 for (int i = 0; i < n; i++)
                 {
                     var t = h.PopMin();
-                    top100[i] = new SrchRec() { d = t[2], path = new int[row + 1] };
-                    res[t[0]].path.CopyTo(top100[i].path, 0);
-                    top100[i].path[row] = t[1];
+
+                    //chk distance
+                    if (t[2] > max_d)
+                    {
+                        Array.Resize(ref top, i);
+                        break;
+                    }
+
+                    var newRec = new SrchRec() { d = t[2], path = new int[row + 1] };
+                    res[t[0]].path.CopyTo(newRec.path, 0);
+                    newRec.path[row] = t[1];
+                    top[i] = newRec;
                 }
-                res = top100;
+                res = top;
             }
             var elapsed = Environment.TickCount - begin;
             Debug.WriteLine("calc diff {0}", elapsed);
