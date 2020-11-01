@@ -128,7 +128,7 @@
                     <button id="fontAdjBtn" class="fontBtn" onclick="onAdjFont()">〇</button>
                 </td>
                 <td>
-                    <button id="printAll" class="fontBtn" onclick="printAll()">&#9113</button>
+                    <button id="printAll" class="fontBtn" onclick="printAll()">&#9113;</button>
                 </td>
             </tr>
         </table>
@@ -1116,18 +1116,26 @@
         //}
 
         //font adjust
+		var g_baseFontSize = 16;
         function onAdjFont() {
             adjFont(g_ratio);
         }
         function adjFont(ratio) {
             var el = document.getElementById("id_sutraTitle");
-            var w = el.offsetWidth;
-            var key = el.innerText;
-            var d = {
-                "Ðại Tạng Kinh Việt Nam": [161, 170, 181],   //normal, bold, larger
-            };
-            var baseW = (d[key] != null) ? d[key][1] : w;
-            var scale = baseW * 1000 / w * ratio;
+            //var w = el.offsetWidth;
+            //var key = el.innerText;
+            //var d = {
+            //    "Ðại Tạng Kinh Việt Nam": [161, 170, 181],   //normal, bold, larger
+            //};
+            //var baseW = (d[key] != null) ? d[key][1] : w;
+            //var scale = baseW * 1000 / w * ratio;
+			
+			//get current font-size
+			var css = getComputedStyle(el, null);
+            var style = css.getPropertyValue("font-size");
+            var size = parseFloat(style);
+			var scale = g_baseFontSize * 1000 / size * ratio;
+			
             //document.getElementById("log").innerText += " scale:" + scale;
             chgFontSize(scale);
             ctrlsResize();

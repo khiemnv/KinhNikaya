@@ -1110,6 +1110,7 @@
         //}
 
         //font adjust
+		var g_baseFontSize = 16;
         function onAdjFont() {
             adjFont(g_ratio);
         }
@@ -1125,6 +1126,13 @@
             };
             var baseW = (d[key] != null) ? d[key][1] : w;
             var scale = baseW * 1000 / w * ratio;
+            
+			//get current font-size
+			var css = getComputedStyle(el, null);
+            var style = css.getPropertyValue("font-size");
+            var size = parseFloat(style);
+			var scale = g_baseFontSize * 1000 / size * ratio;
+
             //document.getElementById("log").innerText += " scale:" + scale;
             chgFontSize(scale);
             ctrlsResize();
