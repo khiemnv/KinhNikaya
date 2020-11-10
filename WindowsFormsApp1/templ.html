@@ -63,7 +63,11 @@
             background-color: #808080;
             width: 100%;
         }
-
+        div.botCtrls {
+            position: fixed;
+            bottom: 5px;
+            right: 5px;
+        }
         div.menu {
             position: fixed;
             top: 50px;
@@ -96,6 +100,12 @@
         button.playBtn {
             font-family: 'MS Gothic';
         }
+        button.gotoTopBtn {
+            font-family: 'MS Gothic';
+            position: fixed;
+            right: 5px;
+            bottom: 10px;
+        }
     </style>
 </head>
 <body id="body" style="font-family: 'Times New Roman'; margin: 5px;">
@@ -107,7 +117,7 @@
         <p>sentence</p>
         <p>sentence</p>
     </div>
-    <button id="id_gotoTopBtn" onclick="gotoTop()" class="fontBtn" style="position: fixed; right: 2px; bottom: 2px">△</button>
+    <button id="id_gotoTopBtn" onclick="gotoTop()" class="gotoTopBtn">△</button>
     <div id="id_topCtrls" class="topCtrls">
         <table style="width: 100%; border-width: 0px; border-collapse: collapse">
             <tr>
@@ -133,7 +143,7 @@
             </tr>
         </table>
     </div>
-    <div id="id_botCtrls" style="position: fixed; bottom: 10px; right: 10px">
+    <div id="id_botCtrls" class="botCtrls">
         <span style="white-space: nowrap">
             <button class="playBtn" id="id_playContent" onclick="onPlayContent()">⏯️</button>
             <button class="playBtn" id="id_stopSpeek" onclick="onStopSpeek()">⏹️</button>
@@ -478,18 +488,14 @@
             //div1.appendChild(span1);
 
             var tbl = document.createElement("table");
-            var tr = document.createElement("tr");
-            tbl.appendChild(tr);
-            var td = document.createElement("td");
+            var tr = tbl.insertRow();
+            var td = tr.insertCell();
             td.appendChild(img1);
-            tr.append(td);
-            var td = document.createElement("td");
+            var td = tr.insertCell();
             td.appendChild(sts1);
-            tr.append(td);
-            var td = document.createElement("td");
-            tr.append(td);
+            var td = tr.insertCell();
             td.appendChild(span1);
-            div1.append(tbl);
+            div1.appendChild(tbl);
 
             //var divTxt = '<div id="[nodeId]_childs" class="childsDiv">';
             //divTxt = divTxt.replace(/\[nodeId\]/g, childNode.id);
@@ -657,7 +663,7 @@
         var url = "https://localhost:44336/api/Lectures";
         url = "https://localhost:5001/api/Lectures";
         //g_lectLst = getLecturesSync(url); //only work on IE 11
-		//render3(url);
+        //render3(url);
     </script>
     <script>
         function onImgClick(nodeId) {
@@ -1070,8 +1076,8 @@
     </script>
     <script>
         function ctrlsResize() {
-            var cw = document.body.clientWidth;
-            var ch = document.body.clientHeight;
+            var cw = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+            var ch = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
             var l = 5;
             var r = 5;
             var t = 5;
@@ -1079,31 +1085,49 @@
             //top ctrls
             w = cw - l - r;
             var topctrls = document.getElementById("id_topCtrls");
-            topctrls.style.top = t;
-            topctrls.style.left = l;
-            topctrls.style.width = w;
+            adjCtrlSize(topctrls,"top",t);
+            adjCtrlSize(topctrls,"left",l);
+            adjCtrlSize(topctrls,"width",w);
             //menu
             t += topctrls.offsetHeight;
             h = ch - t - b;
             var menu = document.getElementById("id_menu");
-            menu.style.top = t;
-            menu.style.height = h;
-            menu.style.width = (g_ratio < 1.5) ? 0.4 * w : 0.8 * w;
+            adjCtrlSize(menu,"top",t);
+            adjCtrlSize(menu,"width",(g_ratio < 1.5) ? 0.4 * w : 0.8 * w);
+            adjCtrlSize(menu,"height",h);
             //content
             var cont = document.getElementById("id_content");
-            cont.style.left = l;
-            cont.style.width = w;
-            cont.style.height = h;
+            adjCtrlSize(cont,"left",l);
+            adjCtrlSize(cont,"width",w);
+            adjCtrlSize(cont,"height",h);
             //bot ctrls
             var botctrls = document.getElementById("id_botCtrls");
-            botctrls.style.right = r + 10;
-            botctrls.style.bottom = b;
+            adjCtrlSize(botctrls,"right",r);
+            adjCtrlSize(botctrls,"bottom",b);
             //goto top btn
             var gtbtn = document.getElementById("id_gotoTopBtn")
-            gtbtn.style.right = r;
-            gtbtn.style.bottom = b + botctrls.offsetHeight;
+            adjCtrlSize(gtbtn,"right",r);
+            adjCtrlSize(gtbtn,"bottom",b+botctrls.offsetHeight);
         }
-
+        function adjCtrlSize(e, type, val){
+            var oldStyle = e.getAttribute("style");
+            var pats = {
+                "width": /width[ :]+\d+(%|px)/g,
+                "height": /height[ :]+\d+(%|px)/g,
+                "top": /top[ :]+\d+(%|px)/g,
+                "left": /left[ :]+\d+(%|px)/g,
+                "right": /right[ :]+\d+(%|px)/g,
+                "bottom": /bottom[ :]+\d+(%|px)/g
+                };
+            var newStyle;
+            var pat = pats[type];
+            if (pat.test(oldStyle)) {
+                newStyle = oldStyle.replace(pat, type + ":" + val + "px");
+            } else {
+                newStyle = type + ":" + val + "px;" + oldStyle;
+            }
+            e.setAttribute("style", newStyle);
+        }
         //function adjMenuSize(ratio) {
         //    var m = document.getElementById("id_menu");
         //    var w = document.body.clientWidth;
@@ -1116,7 +1140,7 @@
         //}
 
         //font adjust
-		var g_baseFontSize = 16;
+        var g_baseFontSize = 16;
         function onAdjFont() {
             adjFont(g_ratio);
         }
@@ -1129,13 +1153,13 @@
             //};
             //var baseW = (d[key] != null) ? d[key][1] : w;
             //var scale = baseW * 1000 / w * ratio;
-			
-			//get current font-size
-			var css = getComputedStyle(el, null);
+
+            //get current font-size
+            var css = getComputedStyle(el, null);
             var style = css.getPropertyValue("font-size");
             var size = parseFloat(style);
-			var scale = g_baseFontSize * 1000 / size * ratio;
-			
+            var scale = g_baseFontSize * 1000 / size * ratio;
+
             //document.getElementById("log").innerText += " scale:" + scale;
             chgFontSize(scale);
             ctrlsResize();
@@ -1447,12 +1471,13 @@
             //a.oncancel = function () { alert('cancel')};
             //a.onafterprint = function () { alert('after print') };
             a.print();
-            a.close();	//ok on chrome
+            a.close();    //ok on chrome
         } 
     </script>
     <script>
         //mainx1() - part x1
         document.getElementById("id_gotoTopBtn").style.display = "none";
+        document.getElementById("id_gotoTopBtn").hidden="hidden";
         window.onscroll = onScroll;
         document.getElementById("id_content").onscroll = onscroll;
 
