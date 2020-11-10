@@ -63,7 +63,11 @@
             background-color: #808080;
             width: 100%;
         }
-
+        div.botCtrls {
+            position: fixed;
+            bottom: 5px;
+            right: 5px;
+        }
         div.menu {
             position: fixed;
             top: 50px;
@@ -96,6 +100,12 @@
         button.playBtn {
             font-family: 'MS Gothic';
         }
+        button.gotoTopBtn {
+            font-family: 'MS Gothic';
+            position: fixed;
+            right: 5px;
+            bottom: 10px;
+        }
     </style>
 </head>
 <body id="body" style="font-family: 'Times New Roman'; margin: 5px;">
@@ -107,7 +117,7 @@
         <p>sentence</p>
         <p>sentence</p>
     </div>
-    <button id="id_gotoTopBtn" onclick="gotoTop()" class="fontBtn" style="position: fixed; right: 2px; bottom: 2px">△</button>
+    <button id="id_gotoTopBtn" onclick="gotoTop()" class="gotoTopBtn">△</button>
     <div id="id_topCtrls" class="topCtrls">
         <table style="width: 100%; border-width: 0px; border-collapse: collapse">
             <tr>
@@ -133,7 +143,7 @@
             </tr>
         </table>
     </div>
-    <div id="id_botCtrls" style="position: fixed; bottom: 10px; right: 10px">
+    <div id="id_botCtrls" class="botCtrls">
         <span style="white-space: nowrap">
             <button class="playBtn" id="id_playContent" onclick="onPlayContent()">⏯️</button>
             <button class="playBtn" id="id_stopSpeek" onclick="onStopSpeek()">⏹️</button>
@@ -478,18 +488,14 @@
             //div1.appendChild(span1);
 
             var tbl = document.createElement("table");
-            var tr = document.createElement("tr");
-            tbl.appendChild(tr);
-            var td = document.createElement("td");
+            var tr = tbl.insertRow();
+            var td = tr.insertCell();
             td.appendChild(img1);
-            tr.append(td);
-            var td = document.createElement("td");
+            var td = tr.insertCell();
             td.appendChild(sts1);
-            tr.append(td);
-            var td = document.createElement("td");
-            tr.append(td);
+            var td = tr.insertCell();
             td.appendChild(span1);
-            div1.append(tbl);
+            div1.appendChild(tbl);
 
             //var divTxt = '<div id="[nodeId]_childs" class="childsDiv">';
             //divTxt = divTxt.replace(/\[nodeId\]/g, childNode.id);
@@ -1070,8 +1076,10 @@
     </script>
     <script>
         function ctrlsResize() {
-            var cw = document.body.clientWidth;
-            var ch = document.body.clientHeight;
+            //var cw = document.body.clientWidth;
+            //var ch = document.body.clientHeight;
+			var cw = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+			var ch = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
             var l = 5;
             var r = 5;
             var t = 5;
@@ -1079,31 +1087,54 @@
             //top ctrls
             w = cw - l - r;
             var topctrls = document.getElementById("id_topCtrls");
-            topctrls.style.top = t;
-            topctrls.style.left = l;
-            topctrls.style.width = w;
+            //topctrls.style.top = t;
+            //topctrls.style.left = l;
+            //topctrls.style.width = w;
+			//adjCtrlSizeTopLeft(topctrls,t,l);
+			adjCtrlSizeWidthHeight(topctrls,w,-1);
             //menu
             t += topctrls.offsetHeight;
             h = ch - t - b;
             var menu = document.getElementById("id_menu");
-            menu.style.top = t;
-            menu.style.height = h;
-            menu.style.width = (g_ratio < 1.5) ? 0.4 * w : 0.8 * w;
+            //menu.style.top = t;
+            //menu.style.height = h;
+            //menu.style.width = (g_ratio < 1.5) ? 0.4 * w : 0.8 * w;
+			var mw = (g_ratio < 1.5) ? 0.4 * w : 0.8 * w;
+			//adjCtrlSizeTopLeft(menu,t,-1);
+			adjCtrlSizeWidthHeight(menu,mw,h);
             //content
             var cont = document.getElementById("id_content");
-            cont.style.left = l;
-            cont.style.width = w;
-            cont.style.height = h;
+            //cont.style.left = l;
+            //cont.style.width = w;
+            //cont.style.height = h;
+			//adjCtrlSizeTopLeft(cont,-1,l);
+			adjCtrlSizeWidthHeight(cont,w,h);
             //bot ctrls
             var botctrls = document.getElementById("id_botCtrls");
-            botctrls.style.right = r + 10;
-            botctrls.style.bottom = b;
+            //botctrls.style.right = r + 10;
+            //botctrls.style.bottom = b;
+			adjCtrlSizeRightBot(botctrls,r,b);
             //goto top btn
             var gtbtn = document.getElementById("id_gotoTopBtn")
-            gtbtn.style.right = r;
-            gtbtn.style.bottom = b + botctrls.offsetHeight;
+            //gtbtn.style.right = r;
+            //gtbtn.style.bottom = b + botctrls.offsetHeight;
+			adjCtrlSizeRightBot(gtbtn,r,b+botctrls.offsetHeight);
         }
-
+		function adjCtrlSizeTopLeft(e,t,l){
+			if (t == -1) { t = parseFloat(e.style.top);}
+			if (l == -1) { l = parseFloat(e.style.left);}
+			e.setAttribute("style","top: "+t+"px;left: "+l+"px;");
+		}
+		function adjCtrlSizeRightBot(e,r,b){
+			if (r == -1) { r = parseFloat(e.style.right);}
+			if (b == -1) { b = parseFloat(e.style.bottom);}
+			e.setAttribute("style","right: "+ r +"px;bottom: "+ b +"px;");
+		}
+		function adjCtrlSizeWidthHeight(e,w,h){
+			if (w == -1) { w = parseFloat(e.style.width);}
+			if (h == -1) { h = parseFloat(e.style.height);}
+			e.setAttribute("style","width: "+ w +"px;height: "+ h +"px;");
+		}
         //function adjMenuSize(ratio) {
         //    var m = document.getElementById("id_menu");
         //    var w = document.body.clientWidth;
