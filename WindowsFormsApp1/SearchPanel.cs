@@ -11,6 +11,7 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using System.Windows.Forms.Design;
 
 namespace WindowsFormsApp1
 {
@@ -35,7 +36,8 @@ namespace WindowsFormsApp1
 #else
         ListView m_lstV;
 #endif
-        StatusBar m_sts;
+        ToolStripStatusLabel m_sts;
+        TrackBar m_trck;
         public Button m_acceptBtn;
         public SearchPanel(string cnnStr, bool bldSrchDb = false)
         {
@@ -102,24 +104,82 @@ namespace WindowsFormsApp1
             m_lstV = lst;
 #endif
 
-            var sts = new StatusBar
-            {
-                Dock = DockStyle.Bottom,
-                ShowPanels = false
-            };
-            m_sts = sts;
+            //var sts = new StatusBar
+            //{
+            //    Dock = DockStyle.Bottom,
+            //    ShowPanels = false
+            //};
+            //m_sts = sts;
+
+            //m_trck = new TrackBar();
+            //m_trck.Maximum = 1000;
+            //m_trck.Minimum = 500;
+            //m_trck.Height = 30;
+            //var flow = new FlowLayoutPanel();
+            //flow.Dock = DockStyle.Fill;
+            //flow.FlowDirection = FlowDirection.RightToLeft;
+            //flow.Height = 30;
+            //m_sts.Height = 50;
+            //m_sts.Width = 300;
+            //flow.Controls.Add(m_trck);
+            //flow.Controls.Add(m_sts);
 
             int iRow = 0;
+            m_tblLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
+            m_tblLayout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
             m_tblLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-            m_tblLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            //m_tblLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             m_tblLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
             m_tblLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             m_tblLayout.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
-            m_tblLayout.Controls.Add(edt, 0, iRow++);
-            m_tblLayout.Controls.Add(btn, 0, iRow++);
+            m_tblLayout.Controls.Add(edt, 0, iRow);
+            m_tblLayout.Controls.Add(btn, 1, iRow++);
             m_tblLayout.Controls.Add(lst, 0, iRow++);
-            m_tblLayout.Controls.Add(sts, 0, iRow++);
+            m_tblLayout.SetColumnSpan(lst, 2);
+            //m_tblLayout.Controls.Add(sts, 0, iRow);
+            //m_tblLayout.Controls.Add(m_trck, 1, iRow);
+            m_tblLayout.CellBorderStyle = TableLayoutPanelCellBorderStyle.None;
 
+            var statusStrip1 = new StatusStrip();
+            statusStrip1.LayoutStyle = ToolStripLayoutStyle.Table;
+            var toolStripStatusLabel1 = new ToolStripStatusLabel();
+            toolStripStatusLabel1.Anchor = AnchorStyles.Right;
+            toolStripStatusLabel1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            var ToolStripTraceBarItem = new ToolStripTraceBarItem();
+            ToolStripTraceBarItem.Anchor = AnchorStyles.Left;
+            statusStrip1.Items.Add(ToolStripTraceBarItem);
+            statusStrip1.Items.Add(toolStripStatusLabel1);
+            m_tblLayout.Controls.Add(statusStrip1);
+            m_tblLayout.SetColumnSpan(statusStrip1, 2);
+            m_trck = (TrackBar)ToolStripTraceBarItem.Control;
+            m_sts = toolStripStatusLabel1;
+            m_trck.Maximum = 1000;
+            m_trck.Minimum = 500;
+            var cfg = ConfigMng.getInstance();
+            m_trck.Value = cfg.m_srchMaxD;
+            m_trck.ValueChanged += M_trck_ValueChanged;
+            toolStripStatusLabel1.Text = "status";
+        }
+
+        private void M_trck_ValueChanged(object sender, EventArgs e)
+        {
+            var cfg = ConfigMng.getInstance();
+            cfg.m_srchMaxD = m_trck.Value;
+        }
+
+        /// <summary>
+        /// Adds trackbar to toolstrip stuff
+        /// </summary>
+        [
+        ToolStripItemDesignerAvailability
+            (ToolStripItemDesignerAvailability.ToolStrip | ToolStripItemDesignerAvailability.StatusStrip)
+        ]
+
+        public class ToolStripTraceBarItem : ToolStripControlHost
+        {
+            public ToolStripTraceBarItem() : base(new TrackBar())
+            {
+            }
         }
 
         public event EventHandler<UInt64> OnSelectTitle;

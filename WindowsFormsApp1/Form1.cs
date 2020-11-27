@@ -52,13 +52,17 @@ namespace WindowsFormsApp1
             InitializeComponent();
 
             var menu = new MenuStrip();
-            var file = new ToolStripMenuItem("&File");
-            menu.Items.Add(file);
-            file.DropDownItems.Add("&Open").Click += (s, e) => { OnOpenDb(s, e); };
-            file.DropDownItems.Add("&Preview").Click += (s, e) => { PreviewTitle(s, e); };
-            file.DropDownItems.Add("&Export").Click += (s, e) => { ExportSelected(s, e); };
-            file.DropDownItems.Add("&Find").Click += (s, e) => { OpenFindWnd(); };
+            var fileMI = new ToolStripMenuItem("&File");
+            menu.Items.Add(fileMI);
+            fileMI.DropDownItems.Add("&Open").Click += (s, e) => { OnOpenDb(s, e); };
+            fileMI.DropDownItems.Add("&Preview").Click += (s, e) => { PreviewTitle(s, e); };
+            fileMI.DropDownItems.Add("&Export").Click += (s, e) => { ExportSelected(s, e); };
+            fileMI.DropDownItems.Add("&Find").Click += (s, e) => { OpenFindWnd(); };
             this.MainMenuStrip  = menu;
+
+            var configMI = new ToolStripMenuItem("&Config");
+            menu.Items.Add(configMI);
+            configMI.DropDownItems.Add("&Font").Click += (s, e) => { MiFont_Click(s, e); };
 
             m_sc = new SplitContainer();
             m_sc.Dock = DockStyle.Fill;
@@ -122,6 +126,23 @@ namespace WindowsFormsApp1
 
             this.Load += OnLoadForm;
             this.FormClosed += OnCloseForm;
+        }
+
+        private void MiFont_Click(object sender, EventArgs e)
+        {
+            FontDialog fontDialog1 = new FontDialog();
+            ConfigMng cfg = ConfigMng.getInstance();
+            fontDialog1.Font = new Font(cfg.m_fontFamily, cfg.m_fontSize);
+
+            if (fontDialog1.ShowDialog() != DialogResult.Cancel)
+            {
+                cfg.m_fontFamily = fontDialog1.Font.FontFamily.Name;
+                cfg.m_fontSize = fontDialog1.Font.Size;
+                string msg = string.Format("Selected font {0} size {1} will be applied after restart application",
+                    fontDialog1.Font.Name, fontDialog1.Font.Size);
+                MessageBox.Show(msg, "Font changed!",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
         }
 
         private void OpenFindWnd()
@@ -385,7 +406,8 @@ namespace WindowsFormsApp1
         }
         private void OnOpenDb(object sender, EventArgs e)
         {
-            if (OpenDbDlg())
+            bool ret = OpenDbDlg();
+            if (ret)
             {
                 //Close editor
                 m_edtPanel.clear();
@@ -412,6 +434,7 @@ namespace WindowsFormsApp1
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.Title = "Select database file";
             ofd.Filter = "access files (*.accdb)|*.accdb";
+            //ofd.InitialDirectory = Directory.GetCurrentDirectory();
             //ofd.Multiselect = true;
             var ret = ofd.ShowDialog();
             if (ret == DialogResult.OK)

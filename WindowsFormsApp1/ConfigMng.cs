@@ -150,7 +150,7 @@ namespace WindowsFormsApp1
 
                     //chk srch setting
                     if (m_instance.m_srchMaxRes == 0) { m_instance.m_srchMaxRes = 1000; }
-                    if (m_instance.m_srchMaxD == 0) { m_instance.m_srchMaxD = 100; }
+                    if (m_instance.m_srchMaxD == 0) { m_instance.m_srchMaxD = 1000; }
                 }
                 else
                 {
